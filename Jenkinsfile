@@ -2,21 +2,21 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'your-dockerhub-username/flask-jenkins-app'
+        DOCKER_IMAGE = 'VannSann/my_java-application'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        REMOTE_HOST = 'ec2-user@your-ec2-public-ip'
+        REMOTE_HOST = 'ec2-user@44.202.86.49'
     }
 
     stages {
         stage('Clone Code') {
             steps {
-                git url: 'https://github.com/your-user/flask-jenkins-app.git', branch: 'main'
+                git url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git', branch: 'main'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest test_app.py'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
@@ -48,6 +48,6 @@ pipeline {
                     '
                 '''
             }
-        }
+            }
     }
 }
