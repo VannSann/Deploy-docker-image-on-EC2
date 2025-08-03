@@ -39,15 +39,16 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sh '''
-                    ssh -o StrictHostKeyChecking=no $REMOTE_HOST '
-                      docker pull $DOCKER_IMAGE:$IMAGE_TAG &&
-                      docker stop flaskapp || true &&
-                      docker rm flaskapp || true &&
-                      docker run -d --name flaskapp -p 80:5000 $DOCKER_IMAGE:$IMAGE_TAG
-                    '
+               sh '''
+                 ssh -o StrictHostKeyChecking=no $REMOTE_HOST '
+                 docker pull $DOCKER_IMAGE:$IMAGE_TAG &&
+                 docker stop springboot-app || true &&
+                 docker rm springboot-app || true &&
+                 docker run -d --name springboot-app -p 80:8080 $DOCKER_IMAGE:$IMAGE_TAG
+                '
                 '''
             }
-            }
+        }
+
     }
 }
