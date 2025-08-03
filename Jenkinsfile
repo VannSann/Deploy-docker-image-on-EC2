@@ -8,20 +8,20 @@ pipeline {
     }
 
     stages {
-        stage('Clone Source') {
-            steps {
-                git credentialsId: 'github-token-creds',
-                    url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git',
-                    branch: 'main'
-            }
-        }
-        /*
+        // stage('Clone Source') {
+        //     steps {
+        //         git credentialsId: 'github-token-creds',
+        //             url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git',
+        //             branch: 'main'
+        //     }
+        // }
+        
         stage('Clone Code') {
             steps {
                 git url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git', branch: 'main'
             }
         }
-        */
+        
         stage('Run Tests') {
             steps {
                 sh 'mvn clean package -DskipTests'
