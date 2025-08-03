@@ -11,7 +11,7 @@ pipeline {
         stage('Clone Source') {
             steps {
                 git credentialsId: 'github-token-creds',
-                    url: 'https://github.com/VannSann/springboot-aws-deploy.git',
+                    url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git',
                     branch: 'main'
             }
         }
