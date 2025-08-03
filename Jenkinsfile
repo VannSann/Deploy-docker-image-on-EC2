@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'VannSann/my_java-application'
+        DOCKER_IMAGE = 'vannsann/my_java-application'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         REMOTE_HOST = 'ec2-user@44.202.86.49'
     }
