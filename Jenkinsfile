@@ -48,7 +48,7 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                sh '''
-                 ssh -o StrictHostKeyChecking=no $REMOTE_HOST '
+                 ##ssh -o StrictHostKeyChecking=no $REMOTE_HOST '
                  docker pull $DOCKER_IMAGE:$IMAGE_TAG &&
                  docker stop springboot-app || true &&
                  docker rm springboot-app || true &&
