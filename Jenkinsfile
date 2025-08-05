@@ -53,7 +53,7 @@ pipeline {
                  docker stop springboot-app || true &&
                  docker rm springboot-app || true &&
                  docker run -d --name springboot-app -p 80:8080 $DOCKER_IMAGE:$IMAGE_TAG
-                '
+                ##'
                 '''
             }
         }
