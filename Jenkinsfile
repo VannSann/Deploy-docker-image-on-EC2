@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'vannsann/my_java-application'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        REMOTE_HOST = 'ec2-user@44.201.195.31'
+        REMOTE_HOST = 'ec2-user@13.222.254.231'
     }
 
     stages {
