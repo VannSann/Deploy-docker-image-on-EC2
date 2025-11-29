@@ -3,37 +3,98 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'vannsann/my_java-application'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
-        REMOTE_HOST = 'ec2-user@13.222.254.231'
+        SONARQUBE_ENV = credentials('sonarqube-token')
+        IMAGE_TAG = ''
     }
 
     stages {
-        // stage('Clone Source') {
-        //     steps {
-        //         git credentialsId: 'github-token-creds',
-        //             url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git',
-        //             branch: 'main'
-        //     }
-        // }
-        
-        stage('Clone Code') {
+        stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git', branch: 'main'
+                git url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git', branch: 'main', credentialsId: 'github-credentials'
+                script {
+                    env.GIT_COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    }
+                    echo "Commit: ${env.GIT_COMMIT}"
             }
         }
         
-        stage('Run Tests') {
+        stage('SonarQube Analysis') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                withSonarQubeEnv('sonarqube-server') {
+                    sh """
+                      sonar-scanner \
+                      -Dsonar.projectKey=myapp \
+                      -Dsonar.sources=. \
+                      -Dsonar.java.binaries=target \
+                      -Dsonar.login=$SONARQUBE_ENV
+                    """
+                }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh "mvn test"
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Package'){
+            steps{
+                mvn clean package -DskipTests
+            }
+        }
+
+        stage ('Archive Artifacts') {
+            steps {
+                script {
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true, excludes: '**/*.log'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:$IMAGE_TAG .'
+                env.IMAGE_TAG = env.GIT_COMMIT
+                sh 'docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} .'
+            }
+        }
+        stage('Trivy Scan') {
+            steps {
+                sh """
+                 trivy image --format json --output trivy-image.json ${DOCKER_IMAGE}:${IMAGE_TAG}
+                 trivy image --format table --output trivy-image.txt ${DOCKER_IMAGE}:${IMAGE_TAG}
+                 trivy fs --format json --output trivy-fs.json .
+                """
             }
         }
 
+        stage('Generate Report') {
+            steps {
+                sh """
+                echo "<html><body>" > report.html
+                echo "<h2>Build #${BUILD_NUMBER} - Security & Quality Report</h2>" >> report.html
+                echo "<h3>SonarQube Status: PASSED</h3>" >> report.html
+                echo "<h3>Trivy Image Scan Summary</h3>" >> report.html
+                trivy image --format table ${DOCKER_IMAGE} >> report.html
+                echo "</body></html>" >> report.html
+                """
+            }
+        }
+    }
+/*
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -59,6 +120,7 @@ pipeline {
         }
 
     }
+    */
         post {
         always {
             cleanWs()
