@@ -13,8 +13,8 @@ pipeline {
                 git url: 'https://github.com/VannSann/Deploy-docker-image-on-EC2.git', branch: 'main', credentialsId: 'github-credentials'
                 script {
                     env.GIT_COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    }
                     echo "Commit: ${env.GIT_COMMIT}"
+                }
             }
         }
         
